@@ -1,0 +1,20 @@
+跑程序需安装celery、eventlet、itsdangerous、django-redis、mutagen、requests、django-haystack、whoosh、jieba、python-alipay-sdk --upgrade
+项目跑之前复制一份当代理任务文件，假设命名为dailyfresh_task
+在STEAM_task/celery_tasks/task.py中添加如下代码
+# ---在任务处理者一端加代码---
+import os
+import django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dailyfresh.settings')
+django.setup()
+# ------
+1.若第一次运行，先生成索引项目
+python manage.py rebuild_index
+2.电脑要有redis数据库，启动redis数据库服务当中间缓存者
+在redis目录下 redis-server.exe redis.window.conf
+3.开启celery代理任务
+在复制的项目目录STEAM_task下 celery -A celery_tasks.tasks worker -l info -P eventlet
+4.开启服务器
+项目目录dailyfresh下 python manage.py runserver
+5.开启Nginx，fastdfs
+在虚拟机终端sudo service fdfs_trackerd start开启tracker服务器，sudo service fdfs_storaged start开启存储服务器；
+sudo /usr/local/nginx/sbin/nginx开启nginx服务器。

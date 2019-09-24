@@ -1,0 +1,66 @@
+{% extends 'base_user_center.html' %}
+{% load staticfiles %}
+{% block right_content %}
+		<div class="right_content clearfix">
+				<div class="info_con clearfix">
+				<h3 class="common_title2">基本信息</h3>
+						<ul class="user_info_list">
+							<li><span>用户名：</span>{{ user.username }}</li>
+							{% if address %}
+							<li><span>联系方式：</span>{{ address.phone }}</li>
+							<li><span>联系地址：</span>{{ address.addr }}</li>
+							{% else %}
+							<li><span>联系方式：</span>无默认</li>
+							<li><span>联系地址：</span>无默认</li>
+							{% endif %}
+						</ul>
+				</div>
+				
+				<h3 class="common_title2">最近浏览</h3>
+				<div class="has_view_list">
+					<ul class="goods_type_list clearfix">
+						{% for goods in goods_li %}
+				        <li>
+					        <a href="{% url 'goods:detail' goods.id %}"><img src="{{ goods.image.url }}"></a>
+					        <h4><a href="{% url 'goods:detail' goods.id %}">{{ goods.name }}</a></h4>
+					        <div class="operate">
+								{% csrf_token %}
+						        <span class="prize">￥{{ goods.price }}</span>
+						        <span class="unit">{{ goods.price }}/{{ goods.unite }}</span>
+						        <a href="javascript:;" sku_id="{{ goods.id }}" class="add_goods" id="add_goods" title="加入购物车">
+					        </div>
+				        </li>
+						{% empty %}
+						    无历史浏览记录
+						{% endfor %}
+
+			        </ul>
+				</div>
+		</div>
+{% endblock right_content %}
+
+{% block bottomfiles %}
+    <div class="add_jump"></div>
+    <script type="text/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+	<script type="text/javascript">
+		$('#add_goods').click(function(){
+		    //获取商品id和数量
+		    sku_id = $(this).attr('sku_id')
+		    count = 1
+		    csrf = $('input[name="csrfmiddlewaretoken"]').val()
+		    //组织参数
+		    params = {'sku_id':sku_id,'count':count, 'csrfmiddlewaretoken':csrf}
+		    // 发起ajax post请求，访问/cart/add,传递参数：sku_id count
+		    $.post('/cart/add',params,function(data){
+		        if (data.res == 5){
+		            //添加成功
+		            alert('添加成功')
+		        }
+		        else{
+		            //添加失败
+		            alert(data.errmsg)
+		        }
+		    })
+    	})
+    </script>
+{% endblock bottomfiles %}

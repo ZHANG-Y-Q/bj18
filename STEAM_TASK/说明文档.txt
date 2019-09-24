@@ -1,0 +1,27 @@
+跑程序需安装celery、pillow、eventlet、itsdangerous、django-redis、mutagen、requests、django-haystack、whoosh、jieba、python-alipay-sdk --upgrade
+项目跑之前复制一份当代理任务文件，假设命名为dailyfresh_task
+在dailyfresh_task/celery_tasks/task.py中添加如下代码
+celery multi start w1 -A celery_tasks.tasks -l info
+解决redis错误，客户端连接以后config set stop-writes-on-bgsave-error no无视关闭快照
+
+解决uwsgi无法关闭问题killall -s INT uwsgi
+# ---在任务处理者一端加代码---
+import os 
+import django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dailyfresh.settings')
+django.setup()
+# ------
+/usr/bin/fdfs_storaged /etc/fdfs/storage.conf restart
+1.若第一次运行，先生成索引项目
+python manage.py rebuild_index
+2.电脑要有redis数据库，启动redis数据库服务当中间缓存者
+在redis目录下 redis-server.exe redis.window.conf
+3.开启celery代理任务
+在复制的项目目录dailyfresh_task下 celery -A celery_tasks.tasks worker -l(小写的L) info -P eventlet
+4.开启服务器
+项目目录STEAM下 python manage.py runserver
+5.开启Nginx，fastdfs
+在虚拟机终端sudo service fdfs_trackerd start开启tracker服务器，sudo service fdfs_storaged start开启存储服务器；
+sudo /usr/local/nginx/sbin/nginx开启nginx服务器。
+
+*6.仅限ubuntu中安装uwsgi，apt-get libpcre3，可以不用runserver启动。将setting中的debug改为False， 启动：uwsgi --ini uwsgi.ini、停止 uwsgi --stop uwsgi.pid
